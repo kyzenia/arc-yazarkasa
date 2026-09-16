@@ -1,10 +1,16 @@
+// arc-yazarkasa.c
+// github.com/kyzenia
+// kyzenia@pm.me
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 int escape = 1;
+int user_choice;
+int database_check;
 int get_user_choice(void);
-void does_database_exist(void);
+int does_database_exist(int is_calc);
 void if_overflow(void);
 
 typedef struct date {
@@ -24,11 +30,12 @@ void append_to_database(date d, char *c, entry e);
 
 typedef struct sort {
     int day, month, year, hour, minute;
+    long double amount;
     char line[256];
 } record;
 
 int compare_the_records(const void *a, const void *b);
-void sort_the_database(void);
+long double sort_the_database(int is_calc);
 
 void how(void);
 void credits(void);
@@ -46,8 +53,7 @@ int main(void) {
     printf("\n_________________________________________________________\n\n");
 
     do {
-        int user_choice = get_user_choice();
-        does_database_exist();
+        user_choice = get_user_choice();
         switch (user_choice) {
             case 1: {
                 printf("\n_________________________________________________________");
@@ -62,8 +68,8 @@ int main(void) {
                 printf("\n_________________________________________________________\n\n");
                 
                 do {
-                    int user_choice = get_user_choice();
-                    does_database_exist();
+                    user_choice = get_user_choice();
+                    database_check = does_database_exist(0);
                     switch (user_choice) {
                         case 1: {
                             printf("\n_________________________________________________________");
@@ -77,37 +83,36 @@ int main(void) {
                             printf("\n                        3) Credit                        ");
                             printf("\n_________________________________________________________\n\n");
 
-                            do {
-                                int user_choice = get_user_choice();
-                                does_database_exist();
+                            while (database_check && escape) {
+                                user_choice = get_user_choice();
                                 switch (user_choice) {
                                     case 1: {
                                         date d = take_the_date();
                                         entry in_cash = take_new_entry(d, 1);
-                                        append_to_database(d, "CASH  :", in_cash);
-                                        sort_the_database();
+                                        append_to_database(d, "CASH", in_cash);
+                                        sort_the_database(0);
                                         credits();
                                         break;
                                     }
                                     case 2: {
                                         date d = take_the_date();
                                         entry in_debit = take_new_entry(d, 1);
-                                        append_to_database(d, "DEBIT :", in_debit);
-                                        sort_the_database();
+                                        append_to_database(d, "DEBIT", in_debit);
+                                        sort_the_database(0);
                                         credits();
                                         break;
                                     }
                                     case 3: {
                                         date d = take_the_date();
                                         entry in_credit = take_new_entry(d, 1);
-                                        append_to_database(d, "CREDIT:", in_credit);
-                                        sort_the_database();
+                                        append_to_database(d, "CREDIT", in_credit);
+                                        sort_the_database(0);
                                         credits();
                                         break;
                                     }
                                     default: how();
                                 }
-                            } while (escape);
+                            }
                             break;
                         }
                         case 2: {
@@ -122,37 +127,36 @@ int main(void) {
                             printf("\n                        3) Credit                        ");
                             printf("\n_________________________________________________________\n\n");
 
-                            do {
-                                int user_choice = get_user_choice();
-                                does_database_exist();
+                            while (database_check && escape) {
+                                user_choice = get_user_choice();
                                 switch (user_choice) {
                                     case 1: {
                                         date d = take_the_date();
                                         entry out_cash = take_new_entry(d, 2);
-                                        append_to_database(d, "CASH  :", out_cash);
-                                        sort_the_database();
+                                        append_to_database(d, "CASH", out_cash);
+                                        sort_the_database(0);
                                         credits();
                                         break;
                                     }
                                     case 2: {
                                         date d = take_the_date();
                                         entry out_debit = take_new_entry(d, 2);
-                                        append_to_database(d, "DEBIT :", out_debit);
-                                        sort_the_database();
+                                        append_to_database(d, "DEBIT", out_debit);
+                                        sort_the_database(0);
                                         credits();
                                         break;
                                     }
                                     case 3: {
                                         date d = take_the_date();
                                         entry out_credit = take_new_entry(d, 2);
-                                        append_to_database(d, "CREDIT:", out_credit);
-                                        sort_the_database();
+                                        append_to_database(d, "CREDIT", out_credit);
+                                        sort_the_database(0);
                                         credits();
                                         break;
                                     }
                                     default: how();
                                 }
-                            } while (escape);
+                            }
                             break;
                         }
                         case 3: {
@@ -165,22 +169,41 @@ int main(void) {
                 break;
             }
             case 2: {
-                printf("\n_________________________________________________________");
-                printf("\n                                                         ");
-                printf("\n                      Calculations                       ");
-                printf("\n                                                         ");
-                printf("\n          Please select the type of the entry:           ");
-                printf("\n                                                         ");
-                printf("\n                     1) xxxxxxxxxxx                      ");
-                printf("\n                     2) xxxxxxxxxxx                      ");
-                printf("\n                     3) xxxxxxxxxxx                      ");
-                printf("\n_________________________________________________________\n\n");
+                database_check = does_database_exist(1);
+                while (database_check && escape) {
+                    printf("\n_________________________________________________________");
+                    printf("\n                                                         ");
+                    printf("\n                      Calculations                       ");
+                    printf("\n                                                         ");
+                    printf("\n       Please select the type of the calculation:        ");
+                    printf("\n                                                         ");
+                    printf("\n                1) Calculate The Balance                 ");
+                    printf("\n                     2) xxxxxxxxxxx                      ");
+                    printf("\n                     3) xxxxxxxxxxx                      ");
+                    printf("\n_________________________________________________________\n\n");
 
-                do {
-                    int user_choice = get_user_choice();
-                    does_database_exist();
-                    credits();
-                } while (escape);
+                    user_choice = get_user_choice();
+                    switch (user_choice) {
+                        case 1: {
+                            long double balance = sort_the_database(1);
+                            printf("\nThe balance is: %+.2Lf\n", balance);
+                            printf("\nPress enter...");
+                            int c;
+                            while ((c = getchar()) != '\n' && c != EOF);
+                            credits();
+                            break;
+                        }
+                        case 2: {
+                            credits();
+                            break;
+                        }
+                        case 3: {
+                            credits();
+                            break;
+                        }
+                        default: how();
+                    }
+                }
                 break;
             }
             case 3: {
@@ -214,27 +237,40 @@ int get_user_choice(void) {
     }
 }
 
-void does_database_exist(void) {
+int does_database_exist(int is_calc) {
     FILE *database = fopen("yazarkasa.csv", "r");
 
     if (database) {
         fclose(database);
+        return 1;
     } else {
         printf("\n>>> WARNING!");
         printf("\nIt seems the database has been vaporized somehow.");
-        printf("\nOr it's just that this is your first time initializing one.");
+        printf("\nOr it's just that this is your first time running the program.");
         printf("\nIf you previously had a database,");
         printf("\nI'm afraid that one seems to be lost.");
         FILE *database = fopen("yazarkasa.csv", "w");
         if (database == NULL) {
-            printf("\n\n>>> WEIRD!\nI wonder how can a write even fail but it sure seems it can and it did.");
-            return;
+            printf("\n\n>>> WEIRD!\nI wonder how can a \"w\" even fail but it sure seems it can and it did.");
+            return 0;
         }
-        fprintf(database, "DATE & TIME\t        TYPE\tAMOUNT\t    COMMENT\n");
-        fclose(database);
-        printf("\nEither way, I created a new database.");
-        printf("\nNow please press enter to continue...");
-        getchar();
+        if (is_calc == 0) {    
+            fprintf(database, "DATE & TIME\tAMOUNT\tTYPE\tCOMMENT\n");
+            fclose(database);
+            printf("\nEither way, I created a new database.");
+            printf("\nNow please press enter to continue...");
+            int c;
+            while ((c = getchar()) != '\n' && c != EOF);
+            return 1;
+        }
+        else {
+            printf("\nEither way, we can't perform calculations out of thin air.");
+            printf("\nPlease press enter to terminate the program...");
+            int c;
+            while ((c = getchar()) != '\n' && c != EOF);
+            escape = 0;
+            return 0;
+        }
     }
 }
 
@@ -376,10 +412,11 @@ void append_to_database(date d, char *c, entry e) {
     FILE *database;
     database = fopen("yazarkasa.csv", "a");
     if (database == NULL) {
-        printf("\n\n>>> WEIRD!\nI wonder how can a write even fail but it sure seems it can and it did.");
+        printf("\n\n>>> WEIRD!\nI wonder how can a \"w\" even fail but it sure seems it can and it did.");
         return;
     }
-    fprintf(database, "%02d/%02d/%04d - %02d:%02d\t%s\t%+.2Lf TL\t%s\n", d.day, d.month, d.year, d.hour, d.minute, c, e.amount, e.comment);
+    fprintf(database, "%02d/%02d/%04d - %02d:%02d\t%+.2Lf TL\t%s\t%s\n", 
+            d.day, d.month, d.year, d.hour, d.minute, e.amount, c, e.comment);
     fclose(database);
 }
 
@@ -394,13 +431,12 @@ int compare_the_records(const void *a, const void *b) {
     return r1->minute - r2->minute;
 }
 
-void sort_the_database(void) {
+long double sort_the_database(int is_calc) {
     FILE *database;
     database = fopen("yazarkasa.csv", "r");
-    
     if (database == NULL) {
         printf("\n\n>>> WEIRD!\nThings have taken a weird route...");
-        return;
+        return 1;
     }
     
     record r[512];
@@ -410,19 +446,20 @@ void sort_the_database(void) {
     if (fgets(discard, sizeof(discard), database) == NULL) {
         printf("\n\nSomehow the database is empty.");
         fclose(database);
-        return;
+        return 1;
     }
 
     while (count < 512 && fgets(r[count].line, sizeof(r[count].line), database) != NULL) {
         int failsafe = sscanf(r[count].line, 
-                              "%02d/%02d/%04d - %02d:%02d", 
+                              "%02d/%02d/%04d - %02d:%02d\t%Lf", 
                               &r[count].day, 
                               &r[count].month, 
                               &r[count].year, 
                               &r[count].hour, 
-                              &r[count].minute);
+                              &r[count].minute,
+                              &r[count].amount);
         
-        if (failsafe != 5) {
+        if (failsafe != 6) {
             continue;
         }
         count++;
@@ -432,12 +469,21 @@ void sort_the_database(void) {
     qsort(r, count, sizeof(record), compare_the_records);
     database = fopen("yazarkasa.csv", "w");
     if (database == NULL) {
-        printf("\n\n>>> WEIRD!\nI wonder how can a write even fail but it sure seems it can and it did.");
-        return;
+        printf("\n\n>>> WEIRD!\nI wonder how can a \"w\" even fail but it sure seems it can and it did.");
+        return 1;
     }
-    fprintf(database, "DATE & TIME\t        TYPE\tAMOUNT\t    COMMENT\n");
+
+    fprintf(database, "DATE & TIME\tAMOUNT\tTYPE\tCOMMENT\n");
     for (int i = 0; i < count; i++) fputs(r[i].line, database);
     fclose(database);
+    
+    if (is_calc == 1) {
+        long double balance = 0.00;
+        for (int i = 0; i < count; i++) {
+            balance += r[i].amount;
+        }
+        return balance;
+    }
 }
 
 void how(void) {
