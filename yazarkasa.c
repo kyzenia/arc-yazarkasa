@@ -20,7 +20,7 @@ typedef struct date {
 date take_the_date(void);
 
 typedef struct entry {
-    long double amount;
+    double amount;
     char comment[128];
 } entry;
 
@@ -37,13 +37,14 @@ int compare_the_records(const void *a, const void *b);
 void sort_the_database(void);
 
 typedef struct calculate {
-    long double amount;
+    double amount;
     char line[256];
 } balance;
 
-long double calculate_the_balance(void);
+double calculate_the_balance(void);
 
 void how(void);
+void press_enter(void);
 void credits(void);
 
 int main(void) {
@@ -192,11 +193,10 @@ int main(void) {
                     switch (user_choice) {
                         case 1: {
                             sort_the_database();
-                            long double balance = calculate_the_balance();
-                            printf("\nThe balance is: %+.2Lf\n", balance);
+                            double balance = calculate_the_balance();
+                            printf("\nThe balance is: %+.2f\n", balance);
                             printf("\nPress enter...");
-                            int c;
-                            while ((c = getchar()) != '\n' && c != EOF);
+                            press_enter();
                             credits();
                             break;
                         }
@@ -266,15 +266,13 @@ int does_database_exist(int is_calc) {
             fclose(database);
             printf("\nEither way, I created a new database.");
             printf("\nNow please press enter to continue...");
-            int c;
-            while ((c = getchar()) != '\n' && c != EOF);
+            press_enter();
             return 1;
         }
         else {
             printf("\nEither way, we can't perform calculations out of thin air.");
             printf("\nPlease press enter to terminate the program...");
-            int c;
-            while ((c = getchar()) != '\n' && c != EOF);
+            press_enter();
             escape = 0;
             return 0;
         }
@@ -422,7 +420,7 @@ void append_to_database(date d, char *c, entry e) {
         printf("\n\n>>> WEIRD!\nI wonder how can a \"w\" even fail but it sure seems it can and it did.");
         return;
     }
-    fprintf(database, "%02d/%02d/%04d - %02d:%02d\t%s\t%+.2Lf TL\t%s\n", 
+    fprintf(database, "%02d/%02d/%04d - %02d:%02d\t%s\t%+.2f TL\t%s\n", 
             d.day, d.month, d.year, d.hour, d.minute, c, e.amount, e.comment);
     fclose(database);
 }
@@ -483,7 +481,7 @@ void sort_the_database(void) {
     fclose(database);
 }
 
-long double calculate_the_balance(void) {
+double calculate_the_balance(void) {
     FILE *database;
     database = fopen("yazarkasa.csv", "r");
     if (database == NULL) {
@@ -501,11 +499,11 @@ long double calculate_the_balance(void) {
     balance b[512];
     int count = 0;
     int day, month, year, hour, minute;
-    char type[32];
+    char *type;
 
     while (count < 512 && fgets(b[count].line, sizeof(b[count].line), database) != NULL) {
         int failsafe = sscanf(b[count].line, 
-                              "%02d/%02d/%04d - %02d:%02d\t%s\t%Lf",
+                              "%02d/%02d/%04d - %02d:%02d\t%s\t%lf",
                               &day, 
                               &month, 
                               &year, 
@@ -521,7 +519,7 @@ long double calculate_the_balance(void) {
     }
 
     fclose(database);
-    long double balance = 0.00;
+    double balance = 0.00;
     for (int i = 0; i < count; i++) {
         balance += b[i].amount;
     }
@@ -531,8 +529,13 @@ long double calculate_the_balance(void) {
 void how(void) {
     printf("\n\nI've no idea what have you possibly done with that keyboard of yours");
     printf("\nto get this message but I must admit that I'm quite impressed :D ");
-    getchar();
+    press_enter();
     escape = 0;
+}
+
+void press_enter(void) {
+    int c;
+    while ((c = getchar()) != '\n' && c != EOF);
 }
 
 void credits(void) {
@@ -557,6 +560,6 @@ void credits(void) {
     printf("\n                            #                            ");
     printf("\n_________________________________________________________\n\n");
     printf("Have a great day!\nPlease press enter to exit the program...");
-    getchar();
+    press_enter();
     escape = 0;
 }
