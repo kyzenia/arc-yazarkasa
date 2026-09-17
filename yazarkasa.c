@@ -30,12 +30,18 @@ void append_to_database(date d, char *c, entry e);
 
 typedef struct sort {
     int day, month, year, hour, minute;
-    long double amount;
     char line[256];
 } record;
 
 int compare_the_records(const void *a, const void *b);
-long double sort_the_database(int is_calc);
+void sort_the_database(void);
+
+typedef struct calculate {
+    long double amount;
+    char line[256];
+} balance;
+
+long double calculate_the_balance(void);
 
 void how(void);
 void credits(void);
@@ -90,7 +96,7 @@ int main(void) {
                                         date d = take_the_date();
                                         entry in_cash = take_new_entry(d, 1);
                                         append_to_database(d, "CASH", in_cash);
-                                        sort_the_database(0);
+                                        sort_the_database();
                                         credits();
                                         break;
                                     }
@@ -98,7 +104,7 @@ int main(void) {
                                         date d = take_the_date();
                                         entry in_debit = take_new_entry(d, 1);
                                         append_to_database(d, "DEBIT", in_debit);
-                                        sort_the_database(0);
+                                        sort_the_database();
                                         credits();
                                         break;
                                     }
@@ -106,7 +112,7 @@ int main(void) {
                                         date d = take_the_date();
                                         entry in_credit = take_new_entry(d, 1);
                                         append_to_database(d, "CREDIT", in_credit);
-                                        sort_the_database(0);
+                                        sort_the_database();
                                         credits();
                                         break;
                                     }
@@ -134,7 +140,7 @@ int main(void) {
                                         date d = take_the_date();
                                         entry out_cash = take_new_entry(d, 2);
                                         append_to_database(d, "CASH", out_cash);
-                                        sort_the_database(0);
+                                        sort_the_database();
                                         credits();
                                         break;
                                     }
@@ -142,7 +148,7 @@ int main(void) {
                                         date d = take_the_date();
                                         entry out_debit = take_new_entry(d, 2);
                                         append_to_database(d, "DEBIT", out_debit);
-                                        sort_the_database(0);
+                                        sort_the_database();
                                         credits();
                                         break;
                                     }
@@ -150,7 +156,7 @@ int main(void) {
                                         date d = take_the_date();
                                         entry out_credit = take_new_entry(d, 2);
                                         append_to_database(d, "CREDIT", out_credit);
-                                        sort_the_database(0);
+                                        sort_the_database();
                                         credits();
                                         break;
                                     }
@@ -185,7 +191,8 @@ int main(void) {
                     user_choice = get_user_choice();
                     switch (user_choice) {
                         case 1: {
-                            long double balance = sort_the_database(1);
+                            sort_the_database();
+                            long double balance = calculate_the_balance();
                             printf("\nThe balance is: %+.2Lf\n", balance);
                             printf("\nPress enter...");
                             int c;
@@ -255,7 +262,7 @@ int does_database_exist(int is_calc) {
             return 0;
         }
         if (is_calc == 0) {    
-            fprintf(database, "DATE & TIME\tAMOUNT\tTYPE\tCOMMENT\n");
+            fprintf(database, "DATE & TIME\tTYPE\tAMOUNT\tCOMMENT\n");
             fclose(database);
             printf("\nEither way, I created a new database.");
             printf("\nNow please press enter to continue...");
@@ -415,8 +422,8 @@ void append_to_database(date d, char *c, entry e) {
         printf("\n\n>>> WEIRD!\nI wonder how can a \"w\" even fail but it sure seems it can and it did.");
         return;
     }
-    fprintf(database, "%02d/%02d/%04d - %02d:%02d\t%+.2Lf TL\t%s\t%s\n", 
-            d.day, d.month, d.year, d.hour, d.minute, e.amount, c, e.comment);
+    fprintf(database, "%02d/%02d/%04d - %02d:%02d\t%s\t%+.2Lf TL\t%s\n", 
+            d.day, d.month, d.year, d.hour, d.minute, c, e.amount, e.comment);
     fclose(database);
 }
 
@@ -431,12 +438,12 @@ int compare_the_records(const void *a, const void *b) {
     return r1->minute - r2->minute;
 }
 
-long double sort_the_database(int is_calc) {
+void sort_the_database(void) {
     FILE *database;
     database = fopen("yazarkasa.csv", "r");
     if (database == NULL) {
         printf("\n\n>>> WEIRD!\nThings have taken a weird route...");
-        return 1;
+        return;
     }
     
     record r[512];
@@ -446,20 +453,18 @@ long double sort_the_database(int is_calc) {
     if (fgets(discard, sizeof(discard), database) == NULL) {
         printf("\n\nSomehow the database is empty.");
         fclose(database);
-        return 1;
+        return;
     }
 
     while (count < 512 && fgets(r[count].line, sizeof(r[count].line), database) != NULL) {
         int failsafe = sscanf(r[count].line, 
-                              "%02d/%02d/%04d - %02d:%02d\t%Lf", 
+                              "%02d/%02d/%04d - %02d:%02d", 
                               &r[count].day, 
                               &r[count].month, 
                               &r[count].year, 
                               &r[count].hour, 
-                              &r[count].minute,
-                              &r[count].amount);
-        
-        if (failsafe != 6) {
+                              &r[count].minute);
+        if (failsafe != 5) {
             continue;
         }
         count++;
@@ -470,20 +475,57 @@ long double sort_the_database(int is_calc) {
     database = fopen("yazarkasa.csv", "w");
     if (database == NULL) {
         printf("\n\n>>> WEIRD!\nI wonder how can a \"w\" even fail but it sure seems it can and it did.");
+        return;
+    }
+
+    fprintf(database, "DATE & TIME\tTYPE\tAMOUNT\tCOMMENT\n");
+    for (int i = 0; i < count; i++) fputs(r[i].line, database);
+    fclose(database);
+}
+
+long double calculate_the_balance(void) {
+    FILE *database;
+    database = fopen("yazarkasa.csv", "r");
+    if (database == NULL) {
+        printf("\n\n>>> WEIRD!\nThings have taken a weird route...");
         return 1;
     }
 
-    fprintf(database, "DATE & TIME\tAMOUNT\tTYPE\tCOMMENT\n");
-    for (int i = 0; i < count; i++) fputs(r[i].line, database);
-    fclose(database);
-    
-    if (is_calc == 1) {
-        long double balance = 0.00;
-        for (int i = 0; i < count; i++) {
-            balance += r[i].amount;
-        }
-        return balance;
+    char discard[256];
+    if (fgets(discard, sizeof(discard), database) == NULL) {
+        printf("\n\nSomehow the database is empty.");
+        fclose(database);
+        return 1;
     }
+
+    balance b[512];
+    int count = 0;
+    int day, month, year, hour, minute;
+    char type[32];
+
+    while (count < 512 && fgets(b[count].line, sizeof(b[count].line), database) != NULL) {
+        int failsafe = sscanf(b[count].line, 
+                              "%02d/%02d/%04d - %02d:%02d\t%s\t%Lf",
+                              &day, 
+                              &month, 
+                              &year, 
+                              &hour,
+                              &minute,
+                              &type,
+                              &b[count].amount);
+        
+        if (failsafe != 7) {
+            continue;
+        }
+        count++;
+    }
+
+    fclose(database);
+    long double balance = 0.00;
+    for (int i = 0; i < count; i++) {
+        balance += b[i].amount;
+    }
+    return balance;
 }
 
 void how(void) {
