@@ -184,15 +184,14 @@ int main(void) {
                     printf("\n                                                         ");
                     printf("\n       Please select the type of the calculation:        ");
                     printf("\n                                                         ");
-                    printf("\n                1) Calculate The Balance                 ");
-                    printf("\n                     2) xxxxxxxxxxx                      ");
-                    printf("\n                     3) xxxxxxxxxxx                      ");
+                    printf("\n            1) Calculate The Balance                     ");
+                    printf("\n            2) Calculate The Balance Of A Type           ");
+                    printf("\n            3) xxxxxxxxxxx                               ");
                     printf("\n_________________________________________________________\n\n");
 
                     user_choice = get_user_choice();
                     switch (user_choice) {
                         case 1: {
-                            sort_the_database();
                             double balance = calculate_the_balance();
                             printf("\nThe balance is: %+.2f\n", balance);
                             printf("\nPress enter...");
@@ -301,7 +300,7 @@ date take_the_date(void) {
             continue;
         }
         d.year = strtol(buffer, &endPtr, 10);
-        if (endPtr != buffer && d.year >= 1 && d.year <= 9999) break;
+        if (endPtr != buffer && *endPtr == '\n' && d.year >= 1 && d.year <= 9999) break;
         printf("\nDoes that abomination really look like a valid year to you?\n\n");
     }
 
@@ -321,7 +320,7 @@ date take_the_date(void) {
             continue;
         }
         d.month = strtol(buffer, &endPtr, 10);
-        if (endPtr != buffer && d.month >= 1 && d.month <= 12) break;
+        if (endPtr != buffer && *endPtr == '\n' && d.month >= 1 && d.month <= 12) break;
         printf("\nDoes that abomination really look like a valid month to you?\n\n");
     }
 
@@ -341,7 +340,7 @@ date take_the_date(void) {
             continue;
         }
         d.day = strtol(buffer, &endPtr, 10);
-        if (endPtr != buffer && d.day >= 1 && d.day <= day) break;
+        if (endPtr != buffer && *endPtr == '\n' && d.day >= 1 && d.day <= day) break;
         printf("\nDoes that abomination really look like a valid day to you?\n\n");
     }
     
@@ -353,7 +352,7 @@ date take_the_date(void) {
             continue;
         }
         d.hour = strtol(buffer, &endPtr, 10);
-        if (endPtr != buffer && d.hour >= 0 && d.hour <= 23) break;
+        if (endPtr != buffer && *endPtr == '\n' && d.hour >= 0 && d.hour <= 23) break;
         printf("\nDoes that abomination really look like a valid hour to you?\n\n");
     }
 
@@ -365,7 +364,7 @@ date take_the_date(void) {
             continue;
         }
         d.minute = strtol(buffer, &endPtr, 10);
-        if (endPtr != buffer && d.minute >= 0 && d.minute <= 59) break;
+        if (endPtr != buffer && *endPtr == '\n' && d.minute >= 0 && d.minute <= 59) break;
         printf("\nDoes that abomination really look like a valid minute to you?\n\n");
     }
 
